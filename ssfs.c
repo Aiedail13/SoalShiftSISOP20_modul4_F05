@@ -144,7 +144,7 @@ void dencrpt(char * inputasli){
 }
 
 
-void writeI(char *text, char* path)
+void writeInfo(char *text, char* path)
 {
     char* info = "INFO";
     time_t t = time(NULL);
@@ -157,7 +157,7 @@ void writeI(char *text, char* path)
     return;
     
 }
-void writeR(char *text, char* path, char * path2)
+void writeInfo2Param(char *text, char* path, char * path2)
 {
     char* info = "INFO";
     time_t t = time(NULL);
@@ -170,7 +170,7 @@ void writeR(char *text, char* path, char * path2)
     return;
     
 }
-void writeW(char *text, char* path)
+void writeWarning(char *text, char* path)
 {
     char* info = "WARNING";
     time_t t = time(NULL);
@@ -282,7 +282,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,struc
     if (fd == -1){
         return -errno;
     }else{
-        writeI("CAT", (char*)fpath);
+        writeInfo("CAT", (char*)fpath);
     }
     res = pread(fd, buf, size, offset);
 
@@ -318,7 +318,7 @@ static int xmp_mkdir(const char *path, mode_t mode)
 		return -errno;
     }else
     {
-        writeI("MKDIR", jalan2);
+        writeInfo("MKDIR", jalan2);
     }
     
 
@@ -340,7 +340,7 @@ static int xmp_open(const char *path, struct fuse_file_info *fi)
 	if (res == -1){
 		return -errno;
     }else{
-        writeI("OPEN", (char*)jalan2);
+        writeInfo("OPEN", (char*)jalan2);
     }
 	close(res);
 	return 0;
@@ -364,7 +364,7 @@ static int xmp_truncate(const char *path, off_t size)
 	if (res == -1){
 		return -errno;
     }{
-        writeI("TRUNCATE", jalan2);
+        writeInfo("TRUNCATE", jalan2);
     }
 
 	return 0;
@@ -390,7 +390,7 @@ static int xmp_unlink(const char *path)
 	if (res == -1){
 		return -errno;
     }else{
-        writeW("REMOVE", jalan2);
+        writeWarning("REMOVE", jalan2);
 
     }
 
@@ -413,7 +413,7 @@ static int xmp_rmdir(const char *path)
 	if (res == -1){
 		return -errno;
     }else{
-        writeW("RMDIR", jalan2);
+        writeWarning("RMDIR", jalan2);
     }
 
 	return 0;
@@ -452,7 +452,7 @@ static int xmp_rename(const char *from, const char *to)
 	if (res == -1){
 		return -errno;
     }else{
-        writeR("MOVE", (char*)from,(char*)to);
+        writeInfo2Param("MOVE", (char*)from,(char*)to);
     }
 	return 0;
 }
@@ -481,7 +481,7 @@ static int xmp_write(const char *path, const char *buf, size_t size,off_t offset
 	if (res == -1){
 		res = -errno;
     }else{
-        writeI("WRITE", jalan2);
+        writeInfo("WRITE", jalan2);
 
     }
 
