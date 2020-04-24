@@ -1,26 +1,17 @@
 #define FUSE_USE_VERSION 28
-
 #include <fuse.h>
-
 #include <stdio.h>
-
 #include <string.h>
-
 #include <unistd.h>
-
 #include <fcntl.h>
-
 #include <dirent.h>
-
 #include <errno.h>
-
 #include <sys/time.h>
 #include <sys/stat.h>
 #include<stdbool.h>
 
 
 static  const  char *dirpath = "/home/seijaku/Documents";
-///////////////////////////1Util////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 char customalpha[]={'9','(','k','u','@','A','W','1','[','L','m',
                     'v','g','a','x','6','q','`','5','Y','2','R',
                     'y','?','+','s','F','!','^','H','K','Q','i',
@@ -33,7 +24,6 @@ char customalpha[]={'9','(','k','u','@','A','W','1','[','L','m',
 
 unsigned long int getExt(char * input){
     int i;
-    printf("get eXTXXX %s %lu\n",input,strlen(input));
     if(strcmp(input,".")==0||strcmp(input,"..")==0||input[strlen(input)-1]=='.')return strlen(input);
     else{
         for(i=strlen(input);i>=0;i--){
@@ -54,10 +44,8 @@ int isFileExistsStats(const char *pathku)
 
     stat(pathku, &stats);
     if (stats.st_mode & __S_IFREG){
-        printf("INI FILE %s\n",pathku);
         return 1;
     }
-    printf("Bukan FIle\n");
     return 0;
 }
 int searchEncEnd(char * input){
@@ -86,11 +74,8 @@ int searchName(char * input){
     int i;
 
     int limit=searchEncEnd(input)-1;
-    printf("search limit %d\n",limit);
     for(i=strlen(input)-1;i>=limit;i--){
-        printf("search %c limit %d %d\n",input[i],i,limit);
         if(input[i]=='/'&& i >= limit){
-            printf("found \\ at %d %d\n",i,limit);
             return i;
         }
     }
@@ -103,17 +88,13 @@ void encrpt(char * input){
     shift=10;
     int start=searchName(input);
     unsigned long int end=getExt(input);
-    printf(" input %s %lu enc start %d  end %lu\n",input,strlen(input),start,end);
     if((input[strlen(input)-1]=='.'&&input[strlen(input)-2]=='/')||(input[strlen(input)-1]=='.'&&input[strlen(input)-2]=='.'&&input[strlen(input)-3]=='/'))return;
-    printf("[+]enc %s to",input);
     for(i=start;i < end;i++){
         if(input[i]=='/')continue;
         int id=where(input[i]);
         int newid=(id+shift)%strlen(customalpha);
-        input[i]=customalpha[newid];
-        
+        input[i]=customalpha[newid];       
     }
-    printf(" %s\n",input);
 
 }
 void dencrpt(char * inputasli){
@@ -125,9 +106,7 @@ void dencrpt(char * inputasli){
     shift=10;
     unsigned long int end=getExt(input);
     int start=searchEncEnd(input);
-    printf(" input %s %lu dec start %d  end %lu\n",input,strlen(input),start,end);
     if((input[strlen(input)-1]=='.'&&input[strlen(input)-2]=='/')||(input[strlen(input)-1]=='.'&&input[strlen(input)-2]=='.'&&input[strlen(input)-3]=='/'))return;
-    printf("[-][-]dec %s\n",input);
     for(i=start;i < end;i++){
         if(input[i]=='/')continue;
         int id=where(input[i]);
@@ -142,16 +121,12 @@ void dencrpt(char * inputasli){
         
     }
     sprintf(fpath,"%s%s",dirpath,input);
-    printf("dec fpath %s\n",fpath);
     if(isFileExistsStats(fpath)){
-        printf("here %s\n",fpath);
         sprintf(inputasli,"%s",input);
-
     }else{
         sprintf(input,"%s",inputasli);
         end=strlen(input);
         if((input[strlen(input)-1]=='.'&&input[strlen(input)-2]=='/')||(input[strlen(input)-1]=='.'&&input[strlen(input)-2]=='.'&&input[strlen(input)-3]=='/'))return;
-        printf("[-][-]dec %s\n",input);
         for(i=start;i < end;i++){
             if(input[i]=='/')continue;
             int id=where(input[i]);
@@ -165,21 +140,17 @@ void dencrpt(char * inputasli){
             input[i]=customalpha[newid];
         }
         sprintf(inputasli,"%s",input);
-
     }
-    printf("to %s\n",input);
 }
 
 
-
-//////////////////////////////////////////////////4Util////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void writeI(char *text, char* path)
 {
     char* info = "INFO";
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     char log[1000];
-    sprintf(log, "[%s]::[%02d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
+    sprintf(log, "[%s]::[%04d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
     FILE *out = fopen("/home/seijaku/fs.log", "a");  
     fprintf(out, "%s\n", log);  
     fclose(out);  
@@ -192,7 +163,7 @@ void writeR(char *text, char* path, char * path2)
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     char log[1000];
-    sprintf(log, "[%s]::[%02d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]::[%s]", info, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path,path2);
+    sprintf(log, "[%s]::[%04d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]::[%s]", info, tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path,path2);
     FILE *out = fopen("/home/seijaku/fs.log", "a");  
     fprintf(out, "%s\n", log);  
     fclose(out);  
@@ -205,99 +176,17 @@ void writeW(char *text, char* path)
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     char log[1000];
-    sprintf(log, "[%s]::[%04d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
+    sprintf(log, "[%s]::[%04d][%02d][%02d]-[%02d]:[%02d]:[%02d]::[%s]::[%s]", info, tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, text, path);
     FILE *out = fopen("/home/seijaku/fs.log", "a");  
     fprintf(out, "%s\n", log);  
     fclose(out);  
     return;
     
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////Util2/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// void splitter (char* a){
-//     char output[1024];
-//     sprintf(output,"%s.",a);
-//     pid_t child_id;
-//     int status;
-//     child_id = fork();
-//     if (child_id < 0) {
-//         exit(EXIT_FAILURE);
-//     }
-
-//     if (child_id == 0) {
-        
-//         char *argv[] = {"split", "-b", "1k","-a","3","-d", a , output, NULL};
-//         execv("/usr/bin/split", argv);
-//     } 
-//     else {
-//         while((wait(&status))>0);
-//         remove(a);
-//     } 
-// }
-
-
-
-// void join (char* a,char* b){
-//     FILE* mainj;
-//     char joined[1024];
-//     sprintf(joined,"/home/feraldy/Downloads/%s",a);
-// 	mainj = fopen(joined,"a+");
-
-//     FILE* need;
-// 	char this[1024];
-// 	sprintf(this,"/home/feraldy/Documents/%s",b);
-// 	need = fopen(this,"r");
-// 	int c;
-//      while(1) {
-//    			c = fgetc(need);
-//    			if( feof(need) ) {
-//    				break;
-//    			}
-//    			fprintf(mainj,"%c",c);
-//    	}
-// }
-
-
-// int main() {
-//     DIR *d;
-// struct dirent *dir;
-// chdir("/home/feraldy/Documents");
-//   d = opendir("/home/feraldy/Documents");
-//         if(d){
-//         while((dir = readdir(d))!=NULL){
-//             if(dir->d_type != DT_DIR){ 
-//                splitter(dir->d_name);
-//             }
-//         }
-//     }closedir(d);
-
-//     d = opendir("/home/feraldy/Documents");
-//         if(d){
-//         while((dir = readdir(d))!=NULL){
-//             if(dir->d_type != DT_DIR){ 
-               
-//                char nama[1024],full[1024],dest[1024];
-//                strcpy(full,dir->d_name);
-//                int len = strlen(full);
-//                strncpy(nama,full,len-4);
-//                join(nama,full);
-               
-//             }
-//         }
-//     }closedir(d);
-// }
-  
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  
-//getattr
 static  int  xmp_getattr(const char *path, struct stat *stbuf)
 
 {
-    printf("getattr %s \n",path);
     int res;
-
-    //printf("get attr dir :%s fpath: %s\n",dirpath,path);
-    
     char fpath[1000];
 	char spath[1000];
 	sprintf(spath,"%s",path);
@@ -309,28 +198,21 @@ static  int  xmp_getattr(const char *path, struct stat *stbuf)
 
     if (res == -1)
         return -errno;
-
     return 0;
-
 }
 
   
 //readdir
 static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
-
 {
-
-    //printf("1 readddir path %s\n",path);
     char fpath[1000];
 	char spath[1000];
-
     if(strcmp(path,"/") == 0)
     {
         path=dirpath;
         sprintf(fpath,"%s",path);
 
     }
-
     else {
         
         sprintf(spath,"%s",path);
@@ -339,31 +221,14 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
         }
         sprintf(fpath,"%s%s",dirpath,spath);
     }
-    //printf("2 readdir dir :%s fpath: %s\n",fpath,spath);
     int res = 0;
-
-    
-
     DIR *dp;
-
     struct dirent *de;
-
-    
-
     (void) offset;
-
     (void) fi;
-
-    
-
     dp = opendir(fpath);
-    //printf("[3]opendir %s\n",fpath);
-
     if (dp == NULL)
         return -errno;
-
-    
-
     while ((de = readdir(dp)) != NULL) {
         struct stat st;
 
@@ -374,10 +239,8 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
         st.st_mode = de->d_type << 12;
         char buff[1000];
 		sprintf(buff, "%s/%s", path,de->d_name);
-        //printf("[4]buff %s\n",buff);
         char *p=strstr(buff,"encv1_");
         if(p){
-            
 		    encrpt(buff);
         }
         sprintf(buff, "%s", buff+strlen(path)+1);
@@ -386,9 +249,7 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 
         if(res!=0) break;
     }
-
     closedir(dp);
-
     return 0;
 
 }
@@ -398,14 +259,9 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,struct fuse_file_info *fi)
 
 {
-
-    //printf(" readd %s",path);
     char fpath[1000];
 	char spath[1000];
-	
-    //printf("read %s\n",path);
     if(strcmp(path,"/") == 0||strcmp(path,".") == 0||strcmp(path,"..") == 0)
-
     {
         path=dirpath;
         sprintf(fpath,"%s",path);
@@ -417,33 +273,24 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,struc
         }
         sprintf(fpath,"%s%s",dirpath,spath);
     }
-    //printf("read dir :%s fpath: %s\n",dirpath,path);
     int res = 0;
-
     int fd = 0 ;
-
-    
-
     (void) fi;
 
     fd = open(fpath, O_RDONLY);
 
-    if (fd == -1)
+    if (fd == -1){
         return -errno;
-
-    
-
+    }else{
+        writeI("CAT", (char*)fpath);
+    }
     res = pread(fd, buf, size, offset);
 
     if (res == -1)
         res = -errno;
-
-    
-
     close(fd);
 
     return res;
-
 }
 static int xmp_mkdir(const char *path, mode_t mode)
 {
@@ -466,9 +313,6 @@ static int xmp_mkdir(const char *path, mode_t mode)
     }else{
         sprintf(jalan2,"%s%s",dirpath,path);
     }
-    printf("path %s jalan name %s%s\n",path,jalan,name);
-    printf("-------mkdir %s\n",jalan2);
-    sleep(1);
 	res = mkdir((const char*)jalan2, mode);
 	if (res == -1){
 		return -errno;
@@ -480,48 +324,131 @@ static int xmp_mkdir(const char *path, mode_t mode)
 
 	return 0;
 }
+static int xmp_open(const char *path, struct fuse_file_info *fi)
+{
+	char jalan[1024];
+    char jalan2[1024];
+    if(strstr(path,"encv1_")){   
+        sprintf(jalan,"%s",path);
+        dencrpt(jalan);
+        sprintf(jalan2,"%s%s",dirpath,jalan);
+    }else{
+        sprintf(jalan2,"%s%s",dirpath,path);
+    }
+	int res;
+	res = open(path, fi->flags);
+	if (res == -1){
+		return -errno;
+    }else{
+        writeI("OPEN", (char*)jalan2);
+    }
+	close(res);
+	return 0;
+}
 
+static int xmp_truncate(const char *path, off_t size)
+{
+	char jalan[1024];
+    char jalan2[1024];
+    if(strstr(path,"encv1_")){
+        
+        sprintf(jalan,"%s",path);
+        dencrpt(jalan);
+        sprintf(jalan2,"%s%s",dirpath,jalan);
+    }else{
+        sprintf(jalan2,"%s%s",dirpath,path);
+    }
+    int res;
+
+	res = truncate(path, size);
+	if (res == -1){
+		return -errno;
+    }{
+        writeI("TRUNCATE", jalan2);
+    }
+
+	return 0;
+}
+
+
+static int xmp_unlink(const char *path)
+{
+
+    char jalan[1024];
+    char jalan2[1024];
+    if(strstr(path,"encv1_")){
+        
+        sprintf(jalan,"%s",path);
+        dencrpt(jalan);
+        sprintf(jalan2,"%s%s",dirpath,jalan);
+    }else{
+        sprintf(jalan2,"%s%s",dirpath,path);
+    }
+	int res;
+
+	res = unlink(path);
+	if (res == -1){
+		return -errno;
+    }else{
+        writeW("REMOVE", jalan2);
+
+    }
+
+	return 0;
+}
+static int xmp_rmdir(const char *path)
+{
+    char jalan[1024];
+    char jalan2[1024];
+    if(strstr(path,"encv1_")){
+        
+        sprintf(jalan,"%s",path);
+        dencrpt(jalan);
+        sprintf(jalan2,"%s%s",dirpath,jalan);
+    }else{
+        sprintf(jalan2,"%s%s",dirpath,path);
+    }
+	int res;
+	res = rmdir(jalan2);
+	if (res == -1){
+		return -errno;
+    }else{
+        writeW("RMDIR", jalan2);
+    }
+
+	return 0;
+}
 static int xmp_rename(const char *from, const char *to)
 {
-	
-    printf("[----]from %s to %s\n",from,to);
-    
     int res,i;
     char dari[1024],ke[1024],name[1024],jalan[1024];
     sprintf(dari,"%s%s",dirpath,from);
     sprintf(ke,"%s%s",dirpath,to);
     if(strstr(dari,"encv1_")){
         dencrpt(dari);
-        printf("[---mv dari %s\n",dari);
         for(i=strlen(dari);i>=0;i--){
             if(dari[i]=='/'){
                 break;
             }
         }
         sprintf(name,"%s",dari+i);
-        printf("[---mv  name %s\n",name);
         strcpy(jalan,"");
         strncpy(jalan,dari,strlen(dari)-strlen(name));
-        printf("[---mv dari jalan%s\n",jalan);
         sprintf(dari,"%s%s",jalan,name);
     }
     if(strstr(ke,"encv1_")){
-        printf("[---mv ke %s\n",ke);
         for(i=strlen(ke);i>=0;i--){
             if(ke[i]=='/'){
                 break;
             }
         }
         sprintf(name,"%s",ke+i);
-        printf("[---mv ke name %s\n",name);
         dencrpt(ke);
         strcpy(jalan,"");
         strncpy(jalan,ke,strlen(ke)-strlen(name));
-        printf("[---mv ke jalan %s\n",jalan);
         sprintf(ke,"%s%s",jalan,name);
     }
-    printf("[----------------]dari %s ke %s",dari,ke);
-	res = rename(dari, ke);
+ 	res = rename(dari, ke);
 	if (res == -1){
 		return -errno;
     }else{
@@ -529,8 +456,38 @@ static int xmp_rename(const char *from, const char *to)
     }
 	return 0;
 }
+static int xmp_write(const char *path, const char *buf, size_t size,off_t offset, struct fuse_file_info *fi)
+{
+	
+    char jalan[1024];
+    char jalan2[1024];
+    if(strstr(path,"encv1_")){
+        sprintf(jalan,"%s",path);
+        dencrpt(jalan);
+        sprintf(jalan2,"%s%s",dirpath,jalan);
+    }else{
+        sprintf(jalan2,"%s%s",dirpath,path);
+    }
 
+    int fd;
+	int res;
 
+	(void) fi;
+	fd = open(jalan2, O_WRONLY);
+	if (fd == -1)
+		return -errno;
+
+	res = pwrite(fd, buf, size, offset);
+	if (res == -1){
+		res = -errno;
+    }else{
+        writeI("WRITE", jalan2);
+
+    }
+
+	close(fd);
+	return res;
+}
 
 static struct fuse_operations xmp_oper = {
 
@@ -538,17 +495,21 @@ static struct fuse_operations xmp_oper = {
 .readdir = xmp_readdir,
 .read = xmp_read,
 .mkdir		= xmp_mkdir,
-.rename		= xmp_rename
+.rmdir = xmp_rmdir,
+.open = xmp_open,
+.rename		= xmp_rename,
+.unlink = xmp_unlink,
+.truncate = xmp_truncate,
+.write = xmp_write
 };
 
   
 
 int  main(int  argc, char *argv[])
-
 {
 
-umask(0);
+    umask(0);
 
-return fuse_main(argc, argv, &xmp_oper, NULL);
+    return fuse_main(argc, argv, &xmp_oper, NULL);
 
 }
